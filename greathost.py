@@ -56,14 +56,19 @@ def send_notice(kind, fields):
     
     if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
         try:
-            requests.post(
+            resp = requests.post(
                 f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
                 data={"chat_id": TELEGRAM_CHAT_ID, "text": msg, "parse_mode": "HTML"},
                 proxies={"http": None, "https": None},
                 timeout=10
             )
+            print(f"📡 Telegram 接口响应状态码: {resp.status_code}")
+            if resp.status_code != 200:
+                print(f"📡 Telegram 接口返回错误: {resp.text}")
         except Exception as e:
             print(f"❌ Telegram 通知发送失败: {e}")
+    else:
+        print(f"⚠️ Telegram 配置缺失: TOKEN={'已设置' if TELEGRAM_BOT_TOKEN else '未设置'}, ID={'已设置' if TELEGRAM_CHAT_ID else '未设置'}")
 
     try:
         md = msg.replace("<b>", "**").replace("</b>", "**").replace("<code>", "`").replace("</code>", "`")
