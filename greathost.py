@@ -242,9 +242,10 @@ def run():
             except Exception as se:
                 print(f"⚠️ 保存调试信息失败: {se}")
             
+        error_msg = str(e).replace("<", "&lt;").replace(">", "&gt;")
         send_notice("error", [
             ("📛", "服务器名称", TARGET_NAME),
-            ("❌", "故障", f"<code>{type(e).__name__}: {str(e)[:100]}</code>"),
+            ("❌", "故障", f"<code>{type(e).__name__}: {error_msg[:100]}</code>"),
             ("🌐", "代理状态", "已尝试直连/Stealth") 
         ])
 
