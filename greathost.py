@@ -81,9 +81,13 @@ class GH:
         opts.add_argument("--no-sandbox")
         opts.add_argument("--disable-dev-shm-usage")
         opts.add_argument("--window-size=1920,1080")
-        # 禁用自动化控制特征，防止被检测
+        # 禁用自动化控制特征
         opts.add_argument("--disable-blink-features=AutomationControlled")
-        opts.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36")
+        opts.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
+        
+        # 深度隐藏特征
+        opts.add_experimental_option("excludeSwitches", ["enable-automation"])
+        opts.add_experimental_option('useAutomationExtension', False)
         
         proxy = {'proxy': {'http': PROXY_URL, 'https': PROXY_URL}} if PROXY_URL else None
         
@@ -94,7 +98,12 @@ class GH:
             print("🚀 使用标准 Selenium 直连模式")
             self.d = std_webdriver.Chrome(options=opts)
             
-        self.w = WebDriverWait(self.d, 25)
+        # 移除 webdriver 特征
+        self.d.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+            "source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+        })
+            
+        self.w = WebDriverWait(self.d, 40)
 
     def api(self, url, method="GET"):
         print(f"📡 API 调用 [{method}] {url}")
@@ -114,6 +123,7 @@ class GH:
     def login(self):
         print(f"🔑 正在登录: {EMAIL[:3]}***...")
         self.d.get("https://greathost.es/login")
+        time.sleep(5) # 给 Cloudflare 验证和页面加载留出缓冲时间
         self.w.until(EC.presence_of_element_located((By.NAME, "email"))).send_keys(EMAIL)
         self.d.find_element(By.NAME, "password").send_keys(PASSWORD)
         self.d.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
