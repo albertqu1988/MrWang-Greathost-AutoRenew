@@ -59,10 +59,11 @@ def send_notice(kind, fields):
             requests.post(
                 f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
                 data={"chat_id": TELEGRAM_CHAT_ID, "text": msg, "parse_mode": "HTML"},
-                proxies={"http": None, "https": None}, # <-- 只需要加这一行，强制直连
-                timeout=10 # 稍微增加超时防止网络卡顿
+                proxies={"http": None, "https": None},
+                timeout=10
             )
-        except: pass
+        except Exception as e:
+            print(f"❌ Telegram 通知发送失败: {e}")
 
     try:
         md = msg.replace("<b>", "**").replace("</b>", "**").replace("<code>", "`").replace("</code>", "`")
